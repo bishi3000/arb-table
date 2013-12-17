@@ -1,7 +1,7 @@
 arb-table
 =========
 
-Bitcoin arbitration table
+Bitcoin arbitrage table. Shows differences in exchanges rates of various bitcoin exchanges
 
 Requires:
 
@@ -19,3 +19,8 @@ mvn clean package
 To run:
 
 mvn vertx:runMod
+
+
+Once running, go to :
+
+http://localhost:8080/index.html
