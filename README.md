@@ -1,9 +1,24 @@
-# Vert.x Example Maven Project
+=======
+Bitcoin arbitrage table. Shows differences in exchanges rates of various bitcoin exchanges
 
-Example project for creating a Vert.x module with a Gradle build.
+Requires:
 
-By default this module contains a simple Java verticle which listens on the event bus and responds to `ping!`
-messages with `pong!`.
+  Maven 3
+  Java 7
+  
+  
+This project uses Vert.x and the Vert.x maven plugin to run
 
-This example also shows you how to write tests in Java, Groovy, Ruby and Python
 
+To build:
+
+mvn clean package
+
+To run:
+
+mvn vertx:runMod
+
+
+Once running, go to :
+
+http://localhost:8080/index.html
