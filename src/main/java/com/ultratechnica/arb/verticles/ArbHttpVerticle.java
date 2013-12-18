@@ -85,19 +85,26 @@ public class ArbHttpVerticle extends Verticle {
 
             Map<String, JsonObject> prices = new LinkedHashMap<>();
 
-            String krakenPrice = arbTable.get(Exchanges.KRAKEN.getDisplayName());
-            prices.put(Exchanges.KRAKEN.getDisplayName(), new JsonObject(krakenPrice));
+            for (Exchanges exchange : Exchanges.values()) {
+                String price = arbTable.get(exchange.getDisplayName());
 
-            String mtGoxPrice = arbTable.get(Exchanges.MT_GOX.getDisplayName());
-            prices.put(Exchanges.MT_GOX.getDisplayName(), new JsonObject(mtGoxPrice));
-
-            String btcePrice = arbTable.get(Exchanges.BTC_E.getDisplayName());
-            prices.put(Exchanges.BTC_E.getDisplayName(), new JsonObject(btcePrice));
+                if (price != null) {
+                    prices.put(exchange.getDisplayName(), new JsonObject(price));
+                }
+            }
 
             buildPriceTable(tableData, prices);
         }
 
         return result;
+    }
+
+    private ConcurrentSharedMap<String ,String> getPriceDataMap(Currencies currency) {
+        switch (currency) {
+            case USD: return vertx.sharedData().getMap(USD_PRICE_DATA.name());
+            case EUR: return vertx.sharedData().getMap(EUR_PRICE_DATA.name());
+            default: return vertx.sharedData().getMap(USD_PRICE_DATA.name());
+        }
     }
 
     private void buildPriceTable(JsonObject tableData, Map<String, JsonObject> prices) {
@@ -120,14 +127,6 @@ public class ArbHttpVerticle extends Verticle {
                 row.putObject(sellEntry.getKey(), cell);
             }
             tableData.putObject(buyEntry.getKey(), row);
-        }
-    }
-
-    private ConcurrentSharedMap<String ,String> getPriceDataMap(Currencies currency) {
-        switch (currency) {
-            case USD: return vertx.sharedData().getMap(USD_PRICE_DATA.name());
-            case EUR: return vertx.sharedData().getMap(EUR_PRICE_DATA.name());
-            default: return vertx.sharedData().getMap(USD_PRICE_DATA.name());
         }
     }
 }

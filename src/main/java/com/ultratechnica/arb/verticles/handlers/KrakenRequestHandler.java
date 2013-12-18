@@ -5,26 +5,20 @@ import com.ultratechnica.arb.common.Currencies;
 import com.ultratechnica.arb.common.Exchanges;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
-import org.vertx.java.core.VoidHandler;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpClientResponse;
 import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.shareddata.ConcurrentSharedMap;
 
 import java.text.ParseException;
 
-import static com.ultratechnica.arb.common.DataNames.EUR_PRICE_DATA;
-import static com.ultratechnica.arb.common.DataNames.USD_PRICE_DATA;
-import static com.ultratechnica.arb.common.ResultFields.ASK_PRICE;
-import static com.ultratechnica.arb.common.ResultFields.BID_PRICE;
-import static com.ultratechnica.arb.common.ResultFields.LAST_CLOSED_PRICE;
+import static com.ultratechnica.arb.common.ResultFields.*;
 
 /**
  * User: keithbishop
  * Date: 16/12/2013
  * Time: 00:37
  */
-public class KrakenRequestHandler implements Handler<HttpClientResponse> {
+public class KrakenRequestHandler extends AbstractRequestHandler {
 
     private static final JsonPath bidPricePathUSD = JsonPath.compile("$.result.XXBTZUSD.b[0]");
 
@@ -38,63 +32,16 @@ public class KrakenRequestHandler implements Handler<HttpClientResponse> {
 
     private static final JsonPath lastClosedPricePathEUR = JsonPath.compile("$.result.XXBTZEUR.c[0]");
 
-    private final Vertx vertx;
-
-    private final Currencies currency;
-
     public KrakenRequestHandler(Vertx vertx, Currencies currency) {
-        this.vertx = vertx;
-        this.currency = currency;
+        super(currency, vertx);
+        setExchange(Exchanges.KRAKEN);
     }
 
-    @Override
-    public void handle(final HttpClientResponse httpClientResponse) {
-        System.out.println("Retrieved response from Kraken...");
+    protected Handler<Buffer> getDataHandler(final JsonObject result) {
 
-        final JsonObject result = new JsonObject();
+        return new AbstractDataHandler() {
 
-        httpClientResponse.dataHandler(getDataHandler(result));
-
-        httpClientResponse.endHandler(getEndHandler(result));
-    }
-
-    private VoidHandler getEndHandler(final JsonObject result) {
-
-        final ConcurrentSharedMap<String, String> priceData = getPriceData();
-
-        return new VoidHandler() {
-            @Override
-            protected void handle() {
-                priceData.put(Exchanges.KRAKEN.getDisplayName(), result.encode());
-            }
-        };
-    }
-
-    private ConcurrentSharedMap<String, String> getPriceData() {
-
-        switch (currency) {
-            case EUR: return vertx.sharedData().getMap(EUR_PRICE_DATA.name());
-            case USD: return vertx.sharedData().getMap(USD_PRICE_DATA.name());
-            default: return vertx.sharedData().getMap(USD_PRICE_DATA.name());
-        }
-    }
-
-    private Handler<Buffer> getDataHandler(final JsonObject result) {
-        return new Handler<Buffer>() {
-            @Override
-            public void handle(Buffer buffer) {
-
-                try {
-                    String json = buffer.toString();
-
-                    populatePrices(json);
-
-                } catch (ParseException e) {
-                    System.out.println("Unable to parse response");
-                }
-            }
-
-            private void populatePrices(String json) throws ParseException {
+            protected void populatePrices(String json) throws ParseException {
 
                 if (currency == Currencies.USD) {
 

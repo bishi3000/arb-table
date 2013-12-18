@@ -9,7 +9,8 @@ public enum Exchanges {
 
     KRAKEN("Kraken"),
     MT_GOX("MtGox"),
-    BTC_E("BTC-e")
+    BTC_E("BTC-e"),
+    BIT_STAMP("Bitstamp")
     ;
 
     private String displayName;

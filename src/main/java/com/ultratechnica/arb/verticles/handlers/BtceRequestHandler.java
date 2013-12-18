@@ -13,8 +13,6 @@ import org.vertx.java.core.shareddata.ConcurrentSharedMap;
 
 import java.text.ParseException;
 
-import static com.ultratechnica.arb.common.DataNames.EUR_PRICE_DATA;
-import static com.ultratechnica.arb.common.DataNames.USD_PRICE_DATA;
 import static com.ultratechnica.arb.common.ResultFields.ASK_PRICE;
 import static com.ultratechnica.arb.common.ResultFields.BID_PRICE;
 import static com.ultratechnica.arb.common.ResultFields.LAST_CLOSED_PRICE;
@@ -24,7 +22,7 @@ import static com.ultratechnica.arb.common.ResultFields.LAST_CLOSED_PRICE;
  * Date: 15/12/2013
  * Time: 23:18
  */
-public class BtceRequestHandler implements Handler<HttpClientResponse> {
+public class BtceRequestHandler extends AbstractRequestHandler {
 
     private static final JsonPath bidPricePathUSD = JsonPath.compile("$.btc_usd.last");
 
@@ -38,63 +36,17 @@ public class BtceRequestHandler implements Handler<HttpClientResponse> {
 
     private static final JsonPath lastClosedPricePathEUR = JsonPath.compile("$.btc_eur.sell");
 
-    private final Currencies currency;
-
-    private Vertx vertx;
-
     public BtceRequestHandler(Vertx vertx, Currencies currency) {
-        this.currency = currency;
-        this.vertx = vertx;
+        super(currency, vertx);
+        setExchange(Exchanges.BTC_E);
     }
 
     @Override
-    public void handle(final HttpClientResponse httpClientResponse) {
-        System.out.println("Retrieved response from BTC-e...");
+    protected Handler<Buffer> getDataHandler(final JsonObject result) {
 
-        final JsonObject result = new JsonObject();
+        return new AbstractDataHandler() {
 
-        httpClientResponse.dataHandler(getDataHandler(result));
-        httpClientResponse.endHandler(getEndHandler(result));
-    }
-
-    private VoidHandler getEndHandler(final JsonObject result) {
-
-        final ConcurrentSharedMap<String, String> priceData = getPriceData();
-
-        return new VoidHandler() {
-            @Override
-            protected void handle() {
-                priceData.put(Exchanges.BTC_E.getDisplayName(), result.encode());
-            }
-        };
-    }
-
-    private ConcurrentSharedMap<String, String> getPriceData() {
-
-        switch (currency) {
-            case EUR: return vertx.sharedData().getMap(EUR_PRICE_DATA.name());
-            case USD: return vertx.sharedData().getMap(USD_PRICE_DATA.name());
-            default: return vertx.sharedData().getMap(USD_PRICE_DATA.name());
-        }
-    }
-
-    private Handler<Buffer> getDataHandler(final JsonObject result) {
-
-        return new Handler<Buffer>() {
-            @Override
-            public void handle(Buffer buffer) {
-
-                try {
-                    String json = buffer.toString();
-
-                    populatePrices(json);
-
-                } catch (ParseException e) {
-                    System.out.println("Unable to parse response");
-                }
-            }
-
-            private void populatePrices(String json) throws ParseException {
+            protected void populatePrices(String json) throws ParseException {
 
                 if (currency == Currencies.USD) {
 

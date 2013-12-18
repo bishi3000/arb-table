@@ -16,6 +16,7 @@ public class ArbMainVerticle extends Verticle {
         container.deployVerticle("com.ultratechnica.arb.verticles.KrakenVerticle");
         container.deployVerticle("com.ultratechnica.arb.verticles.MtGoxVerticle");
         container.deployVerticle("com.ultratechnica.arb.verticles.BtceVerticle");
+        container.deployVerticle("com.ultratechnica.arb.verticles.BitstampVerticle");
         container.deployVerticle("com.ultratechnica.arb.verticles.ArbHttpVerticle");
     }
 
@@ -26,6 +27,7 @@ public class ArbMainVerticle extends Verticle {
         container.undeployVerticle("com.ultratechnica.arb.verticles.KrakenVerticle");
         container.undeployVerticle("com.ultratechnica.arb.verticles.MtGoxVerticle");
         container.undeployVerticle("com.ultratechnica.arb.verticles.BtceVerticle");
+        container.undeployVerticle("com.ultratechnica.arb.verticles.BitstampVerticle");
         container.undeployVerticle("com.ultratechnica.arb.verticles.ArbHttpVerticle");
     }
 }
